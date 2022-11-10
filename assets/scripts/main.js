@@ -69,7 +69,7 @@ async function getRecipes() {
   // A1. TODO - Check local storage to see if there are any recipes.
   //            If there are recipes, return them.
   if (localStorage.getItem('recipes')) {
-    return window.localStorage.getItem('recipes');
+    return  JSON.parse(localStorage.getItem('recipes'));
   }
   /**************************/
   // The rest of this method will be concerned with requesting the recipes
@@ -82,23 +82,34 @@ async function getRecipes() {
   //            take two parameters - resolve, and reject. These are functions
   //            you can call to either resolve the Promise or Reject it.
   
-  var newPromise = new Promise(function(resolve, reject) {
+  var newPromise = new Promise(async function(resolve, reject) {
     resolve('Success!');
+    reject('Error!');
   });
-  var extraData = 'ImExtraData';
-  promise1.then(function(value) {
-    console.log(value, extraData);
-    // expected output: "Success!" "ImExtraData"
-  }, extraData);
+  newPromise.then(async function() {
+    for (let i = 0; i < RECIPE_URLS.length; i++) { 
+      try {
+        const response = await fetch(RECIPE_URLS[i]);
+        const recipe = await response.json();
+        arr.push(recipe);
+        // console.log(RECIPE_URLS[i]);
+        
+      } catch (error) {
+        console.error(error);
+        reject(error);
+      }
+    }
+  if (arr.length == RECIPE_URLS.length) {
+    saveRecipesToStorage(arr);
+    resolve(arr);
+  }
+    
+  });
 
+  
   return newPromise;
 
-  /*const myPromise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      resolve("resolved");
-    }, 300);
-  });
-  */
+
   /**************************/
   // A4-A11 will all be *inside* the callback function we passed to the Promise
   // we're returning
@@ -108,9 +119,6 @@ async function getRecipes() {
   // A5. TODO - Since we are going to be dealing with asynchronous code, create
   //            a try / catch block. A6-A9 will be in the try portion, A10-A11
   //            will be in the catch portion.
-  try {
-    
-  
   // A6. TODO - For each URL in that array, fetch the URL - MDN also has a great
   //            article on fetch(). NOTE: Fetches are ASYNCHRONOUS, meaning that
   //            you must either use "await fetch(...)" or "fetch.then(...)". This
@@ -123,11 +131,10 @@ async function getRecipes() {
   //            if you have, then save the recipes to storage using the function
   //            we have provided. Then, pass the recipes array to the Promise's
   //            resolve() method.
-  } catch (error) {
-    console.error(error);
+  
   // A10. TODO - Log any errors from catch using console.error
   // A11. TODO - Pass any errors to the Promise's reject() function
-  }
+  
 }
 
 /**
